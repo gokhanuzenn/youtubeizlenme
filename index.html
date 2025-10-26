@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoDestek - YouTube Abone & İzlenme Yardımlaşma Platformu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --admin-color: #9b59b6;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 100px 0;
+        }
+        
+        .feature-card {
+            border-radius: 10px;
+            transition: transform 0.3s;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .how-it-works {
+            background-color: #f1f8ff;
+            padding: 80px 0;
+        }
+        
+        .step {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-weight: bold;
+        }
+        
+        .pricing-card {
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .pricing-card:hover {
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        
+        .btn-admin {
+            background-color: var(--admin-color);
+            border-color: var(--admin-color);
+            color: white;
+        }
+        
+        .btn-admin:hover {
+            background-color: #8e44ad;
+            border-color: #8e44ad;
+            color: white;
+        }
+        
+        footer {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        /* Admin Panel Styles */
+        .admin-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 9999;
+            overflow-y: auto;
+        }
+        
+        .admin-sidebar {
+            background-color: var(--secondary-color);
+            color: white;
+            height: 100vh;
+            padding: 0;
+        }
+        
+        .admin-content {
+            padding: 20px;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .admin-nav-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .admin-nav-item:hover, .admin-nav-item.active {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .stats-card {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .admin-table {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .login-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .login-form {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Login Modal -->
+    <div class="login-modal" id="adminLoginModal">
+        <div class="login-form">
+            <h3 class="text-center mb-4">Yönetici Girişi</h3>
+            <div class="mb-3">
+                <label for="adminUsername" class="form-label">Kullanıcı Adı</label>
+                <input type="text" class="form-control" id="adminUsername" placeholder="Kullanıcı adınızı girin">
+            </div>
+            <div class="mb-3">
+                <label for="adminPassword" class="form-label">Şifre</label>
+                <input type="password" class="form-control" id="adminPassword" placeholder="Şifrenizi girin">
+            </div>
+            <div class="d-grid gap-2">
+                <button class="btn btn-admin" onclick="adminLogin()">Giriş Yap</button>
+                <button class="btn btn-secondary" onclick="closeAdminLogin()">İptal</button>
+            </div>
+            <div id="loginError" class="alert alert-danger mt-3" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="adminPanel">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-md-2 admin-sidebar">
+                    <div class="d-flex flex-column">
+                        <div class="p-3 text-center border-bottom">
+                            <h4><i class="fas fa-crown me-2"></i>Yönetici Paneli</h4>
+                        </div>
+                        <div class="admin-nav-item active" data-tab="dashboard">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </div>
+                        <div class="admin-nav-item" data-tab="users">
+                            <i class="fas fa-users me-2"></i>Kullanıcılar
+                        </div>
+                        <div class="admin-nav-item" data-tab="videos">
+                            <i class="fas fa-video me-2"></i>Videolar
+                        </div>
+                        <div class="admin-nav-item" data-tab="credits">
+                            <i class="fas fa-coins me-2"></i>Kredi Yönetimi
+                        </div>
+                        <div class="admin-nav-item" data-tab="settings">
+                            <i class="fas fa-cogs me-2"></i>Ayarlar
+                        </div>
+                        <div class="mt-auto p-3">
+                            <button class="btn btn-sm btn-light w-100" onclick="exitAdminPanel()">
+                                <i class="fas fa-sign-out-alt me-1"></i> Çıkış
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Content -->
+                <div class="col-md-10 admin-content">
+                    <!-- Dashboard Tab -->
+                    <div class="admin-tab" id="dashboard-tab">
+                        <h2 class="mb-4">Dashboard</h2>
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card stats-card text-white bg-primary">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h4 id="totalUsers">0</h4>
+                                                <p>Toplam Kullanıcı</p>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="fas fa-users fa-2x"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stats-card text-white bg-success">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h4 id="totalVideos">0</h4>
+                                                <p>Toplam Video</p>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="fas fa-video fa-2x"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stats-card text-white bg-warning">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h4 id="totalViews">0</h4>
+                                                <p>Toplam İzlenme</p>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="fas fa-eye fa-2x"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stats-card text-white bg-danger">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h4 id="totalCredits">0</h4>
+                                                <p>Toplam Kredi</p>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="fas fa-coins fa-2x"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card admin-table">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0">Son Kullanıcılar</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Kullanıcı Adı</th>
+                                                        <th>Kayıt Tarihi</th>
+                                                        <th>Kredi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="recentUsers">
+                                                    <!-- Recent users will be populated here -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card admin-table">
+                                    <div class="card-header bg-success text-white">
+                                        <h5 class="mb-0">Son Eklenen Videolar</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Video Başlığı</th>
+                                                        <th>Kullanıcı</th>
+                                                        <th>İzlenme</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="recentVideos">
+                                                    <!-- Recent videos will be populated here -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Users Tab -->
+                    <div class="admin-tab" id="users-tab" style="display: none;">
+                        <h2 class="mb-4">Kullanıcı Yönetimi</h2>
+                        <div class="card admin-table">
+                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Tüm Kullanıcılar</h5>
+                                <button class="btn btn-light btn-sm" onclick="exportUsers()">
+                                    <i class="fas fa-download me-1"></i> Dışa Aktar
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Kullanıcı Adı</th>
+                                                <th>E-posta</th>
+                                                <th>Kayıt Tarihi</th>
+                                                <th>Kredi</th>
+                                                <th>Durum</th>
+                                                <th>İşlemler</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="allUsers">
+                                            <!-- All users will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Videos Tab -->
+                    <div class="admin-tab" id="videos-tab" style="display: none;">
+                        <h2 class="mb-4">Video Yönetimi</h2>
+                        <div class="card admin-table">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Tüm Videolar</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Video Başlığı</th>
+                                                <th>Kullanıcı</th>
+                                                <th>YouTube ID</th>
+                                                <th>Eklenme Tarihi</th>
+                                                <th>İzlenme</th>
+                                                <th>Durum</th>
+                                                <th>İşlemler</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="allVideos">
+                                            <!-- All videos will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Credits Tab -->
+                    <div class="admin-tab" id="credits-tab" style="display: none;">
+                        <h2 class="mb-4">Kredi Yönetimi</h2>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header bg-warning text-white">
+                                        <h5 class="mb-0">Kullanıcıya Kredi Ekle</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="creditUser" class="form-label">Kullanıcı Seçin</label>
+                                            <select class="form-select" id="creditUser">
+                                                <option value="">Kullanıcı seçin...</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="creditAmount" class="form-label">Kredi Miktarı</label>
+                                            <input type="number" class="form-control" id="creditAmount" min="1" value="100">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="creditReason" class="form-label">Sebep (İsteğe bağlı)</label>
+                                            <input type="text" class="form-control" id="creditReason" placeholder="Kredi ekleme sebebi">
+                                        </div>
+                                        <button class="btn btn-warning w-100" onclick="addCreditsToUser()">Kredi Ekle</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0">Toplu Kredi Dağıtımı</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="bulkCreditAmount" class="form-label">Kredi Miktarı</label>
+                                            <input type="number" class="form-control" id="bulkCreditAmount" min="1" value="50">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="bulkCreditReason" class="form-label">Sebep</label>
+                                            <input type="text" class="form-control" id="bulkCreditReason" placeholder="Toplu kredi dağıtım sebebi">
+                                        </div>
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="onlyActiveUsers" checked>
+                                            <label class="form-check-label" for="onlyActiveUsers">
+                                                Sadece aktif kullanıcılara dağıt
+                                            </label>
+                                        </div>
+                                        <button class="btn btn-info w-100" onclick="addBulkCredits()">Toplu Kredi Dağıt</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card admin-table">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Kredi İşlem Geçmişi</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Tarih</th>
+                                                <th>Kullanıcı</th>
+                                                <th>Miktar</th>
+                                                <th>Tip</th>
+                                                <th>Açıklama</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="creditHistory">
+                                            <!-- Credit history will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings Tab -->
+                    <div class="admin-tab" id="settings-tab" style="display: none;">
+                        <h2 class="mb-4">Sistem Ayarları</h2>
+                        <div class="card">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">Genel Ayarlar</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="siteName" class="form-label">Site Adı</label>
+                                            <input type="text" class="form-control" id="siteName" value="VideoDestek">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="siteDescription" class="form-label">Site Açıklaması</label>
+                                            <textarea class="form-control" id="siteDescription" rows="3">YouTube abone ve izlenme yardımlaşma platformu</textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="creditPerView" class="form-label">Video Başına Kazanılan Kredi</label>
+                                            <input type="number" class="form-control" id="creditPerView" value="1" min="0.1" step="0.1">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="viewCost" class="form-label">İzlenme Başına Maliyet (Kredi)</label>
+                                            <input type="number" class="form-control" id="viewCost" value="1" min="0.1" step="0.1">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="maxViewsPerDay" class="form-label">Kullanıcı Başına Günlük Maks. İzlenme</label>
+                                            <input type="number" class="form-control" id="maxViewsPerDay" value="50" min="1">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="registrationBonus" class="form-label">Kayıt Bonus Kredi</label>
+                                            <input type="number" class="form-control" id="registrationBonus" value="100" min="0">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary" onclick="saveSettings()">Ayarları Kaydet</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Site Content -->
+    <div id="mainSite">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <i class="fab fa-youtube me-2"></i>VideoDestek
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">Ana Sayfa</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Nasıl Çalışır?</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Fiyatlar</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">SSS</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showAdminLogin()">
+                                <i class="fas fa-crown me-1"></i> Yönetici
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="d-flex">
+                        <a href="#" class="btn btn-outline-primary me-2">Giriş Yap</a>
+                        <a href="#" class="btn btn-primary">Kayıt Ol</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <h1 class="display-4 fw-bold">YouTube Kanalınızı Büyütün</h1>
+                        <p class="lead my-4">VideoDestek ile diğer YouTuber'larla karşılıklı izlenme ve abone kazanın. Kredi sistemi ile videolarınızın izlenmesini sağlayın, kanalınızı büyütün.</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="#" class="btn btn-light btn-lg">Hemen Başla</a>
+                            <a href="#" class="btn btn-outline-light btn-lg">Nasıl Çalışır?</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 text-center">
+                        <img src="https://via.placeholder.com/500x350" alt="YouTube Analytics" class="img-fluid rounded shadow">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="py-5">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold">Neden VideoDestek?</h2>
+                    <p class="text-muted">Platformumuzun sunduğu avantajlar</p>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card feature-card h-100">
+                            <div class="card-body text-center p-4">
+                                <div class="text-primary mb-3">
+                                    <i class="fas fa-eye fa-3x"></i>
+                                </div>
+                                <h5 class="card-title">Gerçek İzlenmeler</h5>
+                                <p class="card-text">Gerçek kullanıcılardan organik izlenmeler elde edin. Bot veya sahte hesaplar yok.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card feature-card h-100">
+                            <div class="card-body text-center p-4">
+                                <div class="text-primary mb-3">
+                                    <i class="fas fa-users fa-3x"></i>
+                                </div>
+                                <h5 class="card-title">Aktif Topluluk</h5>
+                                <p class="card-text">Binlerce aktif YouTuber ile videolarınızı izleyip birbirinize destek olun.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card feature-card h-100">
+                            <div class="card-body text-center p-4">
+                                <div class="text-primary mb-3">
+                                    <i class="fas fa-shield-alt fa-3x"></i>
+                                </div>
+                                <h5 class="card-title">YouTube Kurallarına Uygun</h5>
+                                <p class="card-text">Sistemimiz YouTube'un hizmet şartlarına uygun şekilde tasarlanmıştır.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="how-it-works">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold">Nasıl Çalışır?</h2>
+                    <p class="text-muted">4 kolay adımda kanalınızı büyütün</p>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <h5>Kayıt Ol</h5>
+                            <p>Ücretsiz hesabınızı oluşturun ve YouTube kanalınızı bağlayın.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <h5>Kredi Kazanın</h5>
+                            <p>Diğer kullanıcıların videolarını izleyerek kredi kazanın.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <h5>Video Ekleyin</h5>
+                            <p>Kazandığınız kredilerle kendi videolarınızı sisteme ekleyin.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <h5>İzlenme Alın</h5>
+                            <p>Diğer kullanıcılar videolarınızı izlesin, kanalınız büyüsün.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section class="py-5">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold">Kredi Paketleri</h2>
+                    <p class="text-muted">Ek kredi satın alarak daha fazla izlenme elde edin</p>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-md-4 mb-4">
+                        <div class="card pricing-card border-primary h-100">
+                            <div class="card-header text-center bg-primary text-white py-4">
+                                <h4 class="my-0 fw-normal">Başlangıç</h4>
+                            </div>
+                            <div class="card-body text-center p-4">
+                                <h1 class="card-title pricing-card-title">500 Kredi</h1>
+                                <p class="text-muted">Temel ihtiyaçlarınız için</p>
+                                <ul class="list-unstyled mt-3 mb-4">
+                                    <li>500 video izlenmesi</li>
+                                    <li>30 gün geçerlilik</li>
+                                    <li>7/24 destek</li>
+                                </ul>
+                                <button type="button" class="btn btn-lg btn-outline-primary">49.90 TL</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card pricing-card border-warning h-100">
+                            <div class="card-header text-center bg-warning text-white py-4">
+                                <h4 class="my-0 fw-normal">Popüler</h4>
+                            </div>
+                            <div class="card-body text-center p-4">
+                                <h1 class="card-title pricing-card-title">1500 Kredi</h1>
+                                <p class="text-muted">En çok tercih edilen</p>
+                                <ul class="list-unstyled mt-3 mb-4">
+                                    <li>1500 video izlenmesi</li>
+                                    <li>60 gün geçerlilik</li>
+                                    <li>7/24 destek</li>
+                                    <li>Önceliklı video listeleme</li>
+                                </ul>
+                                <button type="button" class="btn btn-lg btn-warning">119.90 TL</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card pricing-card border-success h-100">
+                            <div class="card-header text-center bg-success text-white py-4">
+                                <h4 class="my-0 fw-normal">Profesyonel</h4>
+                            </div>
+                            <div class="card-body text-center p-4">
+                                <h1 class="card-title pricing-card-title">5000 Kredi</h1>
+                                <p class="text-muted">Kanalınızı hızla büyütün</p>
+                                <ul class="list-unstyled mt-3 mb-4">
+                                    <li>5000 video izlenmesi</li>
+                                    <li>90 gün geçerlilik</li>
+                                    <li>7/24 öncelikli destek</li>
+                                    <li>Premium video listeleme</li>
+                                    <li>Abone kazanma özelliği</li>
+                                </ul>
+                                <button type="button" class="btn btn-lg btn-success">349.90 TL</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="py-5 bg-light">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold">Sıkça Sorulan Sorular</h2>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="accordion" id="faqAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                        Sistem YouTube kurallarına uygun mu?
+                                    </button>
+                                </h2>
+                                <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Evet, sistemimiz YouTube'un hizmet şartlarına uygun olarak tasarlanmıştır. Videolar gerçek kullanıcılar tarafından izlenir ve organik etkileşim sağlanır.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingTwo">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                        Ne kadar sürede izlenme alırım?
+                                    </button>
+                                </h2>
+                                <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Videolarınız sisteme eklendikten sonra, aktif kullanıcı sayısına bağlı olarak genellikle 24-48 saat içinde izlenmeye başlar.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingThree">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                        Ücretsiz kredi nasıl alabilirim?
+                                    </button>
+                                </h2>
+                                <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Diğer kullanıcıların videolarını izleyerek günlük ücretsiz kredi kazanabilirsiniz. Ayrıca yönetici panelinden zaman zaman ücretsiz kredi promosyonları yapılmaktadır.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-5 bg-primary text-white">
+            <div class="container text-center">
+                <h2 class="fw-bold mb-3">Hemen Ücretsiz Kaydolun</h2>
+                <p class="lead mb-4">100 ücretsiz kredi ile başlayın ve kanalınızı büyütmeye başlayın</p>
+                <a href="#" class="btn btn-light btn-lg">Ücretsiz Kayıt Ol</a>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="py-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-0">&copy; 2023 VideoDestek. Tüm hakları saklıdır.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <a href="#" class="text-white me-3">Gizlilik Politikası</a>
+                        <a href="#" class="text-white me-3">Kullanım Şartları</a>
+                        <a href="#" class="text-white">İletişim</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Admin credentials
+        const ADMIN_USERNAME = "gokhan";
+        const ADMIN_PASSWORD = "Gokhan.Gokhan.Gokhan.2025";
+        
+        // Sample data for demonstration
+        let users = [
+            {id: 1, username: "ahmet_yilmaz", email: "ahmet@example.com", registerDate: "2023-10-15", credits: 150, status: "active"},
+            {id: 2, username: "mehmet_kaya", email: "mehmet@example.com", registerDate: "2023-10-18", credits: 75, status: "active"},
+            {id: 3, username: "ayse_demir", email: "ayse@example.com", registerDate: "2023-10-20", credits: 200, status: "active"},
+            {id: 4, username: "fatma_celik", email: "fatma@example.com", registerDate: "2023-10-22", credits: 50, status: "inactive"}
+        ];
+        
+        let videos = [
+            {id: 1, title: "Yeni Oyun İncelemesi", username: "ahmet_yilmaz", youtubeId: "abc123", addDate: "2023-10-16", views: 45, status: "active"},
+            {id: 2, title: "Müzik Cover", username: "mehmet_kaya", youtubeId: "def456", addDate: "2023-10-19", views: 32, status: "active"},
+            {id: 3, title: "Vlog: İstanbul Turu", username: "ayse_demir", youtubeId: "ghi789", addDate: "2023-10-21", views: 78, status: "active"},
+            {id: 4, title: "Yemek Tarifi", username: "fatma_celik", youtubeId: "jkl012", addDate: "2023-10-23", views: 12, status: "inactive"}
+        ];
+        
+        let creditHistory = [
+            {date: "2023-10-25", username: "ahmet_yilmaz", amount: 50, type: "added", description: "Video izleme bonusu"},
+            {date: "2023-10-24", username: "mehmet_kaya", amount: 25, type: "added", description: "Günlük giriş bonusu"},
+            {date: "2023-10-24", username: "ayse_demir", amount: 100, type: "spent", description: "Video izlenme hizmeti"},
+            {date: "2023-10-23", username: "fatma_celik", amount: 10, type: "added", description: "Video izleme bonusu"}
+        ];
+        
+        // Show admin login modal
+        function showAdminLogin() {
+            document.getElementById('adminLoginModal').style.display = 'flex';
+        }
+        
+        // Close admin login modal
+        function closeAdminLogin() {
+            document.getElementById('adminLoginModal').style.display = 'none';
+            document.getElementById('loginError').style.display = 'none';
+        }
+        
+        // Admin login function
+        function adminLogin() {
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                // Successful login
+                document.getElementById('adminLoginModal').style.display = 'none';
+                document.getElementById('mainSite').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                
+                // Load admin data
+                loadAdminData();
+            } else {
+                // Failed login
+                document.getElementById('loginError').textContent = 'Geçersiz kullanıcı adı veya şifre!';
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+        
+        // Exit admin panel
+        function exitAdminPanel() {
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('mainSite').style.display = 'block';
+        }
+        
+        // Load admin data
+        function loadAdminData() {
+            // Update stats
+            document.getElementById('totalUsers').textContent = users.length;
+            document.getElementById('totalVideos').textContent = videos.length;
+            
+            let totalViews = 0;
+            videos.forEach(video => {
+                totalViews += video.views;
+            });
+            document.getElementById('totalViews').textContent = totalViews;
+            
+            let totalCredits = 0;
+            users.forEach(user => {
+                totalCredits += user.credits;
+            });
+            document.getElementById('totalCredits').textContent = totalCredits;
+            
+            // Load recent users
+            const recentUsersTable = document.getElementById('recentUsers');
+            recentUsersTable.innerHTML = '';
+            
+            users.slice(-5).forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.registerDate}</td>
+                    <td>${user.credits}</td>
+                `;
+                recentUsersTable.appendChild(row);
+            });
+            
+            // Load recent videos
+            const recentVideosTable = document.getElementById('recentVideos');
+            recentVideosTable.innerHTML = '';
+            
+            videos.slice(-5).forEach(video => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${video.title}</td>
+                    <td>${video.username}</td>
+                    <td>${video.views}</td>
+                `;
+                recentVideosTable.appendChild(row);
+            });
+            
+            // Load all users
+            const allUsersTable = document.getElementById('allUsers');
+            allUsersTable.innerHTML = '';
+            
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${user.registerDate}</td>
+                    <td>${user.credits}</td>
+                    <td><span class="badge ${user.status === 'active' ? 'bg-success' : 'bg-secondary'}">${user.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary">Düzenle</button>
+                        <button class="btn btn-sm btn-outline-danger">Sil</button>
+                    </td>
+                `;
+                allUsersTable.appendChild(row);
+            });
+            
+            // Load all videos
+            const allVideosTable = document.getElementById('allVideos');
+            allVideosTable.innerHTML = '';
+            
+            videos.forEach(video => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${video.id}</td>
+                    <td>${video.title}</td>
+                    <td>${video.username}</td>
+                    <td>${video.youtubeId}</td>
+                    <td>${video.addDate}</td>
+                    <td>${video.views}</td>
+                    <td><span class="badge ${video.status === 'active' ? 'bg-success' : 'bg-secondary'}">${video.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary">Düzenle</button>
+                        <button class="btn btn-sm btn-outline-danger">Sil</button>
+                    </td>
+                `;
+                allVideosTable.appendChild(row);
+            });
+            
+            // Load credit history
+            const creditHistoryTable = document.getElementById('creditHistory');
+            creditHistoryTable.innerHTML = '';
+            
+            creditHistory.forEach(record => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${record.date}</td>
+                    <td>${record.username}</td>
+                    <td class="${record.type === 'added' ? 'text-success' : 'text-danger'}">${record.type === 'added' ? '+' : '-'}${record.amount}</td>
+                    <td><span class="badge ${record.type === 'added' ? 'bg-success' : 'bg-danger'}">${record.type}</span></td>
+                    <td>${record.description}</td>
+                `;
+                creditHistoryTable.appendChild(row);
+            });
+            
+            // Load user dropdown for credit assignment
+            const creditUserSelect = document.getElementById('creditUser');
+            creditUserSelect.innerHTML = '<option value="">Kullanıcı seçin...</option>';
+            
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = user.username;
+                creditUserSelect.appendChild(option);
+            });
+        }
+        
+        // Add credits to user
+        function addCreditsToUser() {
+            const userId = document.getElementById('creditUser').value;
+            const amount = parseInt(document.getElementById('creditAmount').value);
+            const reason = document.getElementById('creditReason').value;
+            
+            if (!userId) {
+                alert('Lütfen bir kullanıcı seçin!');
+                return;
+            }
+            
+            if (isNaN(amount) || amount <= 0) {
+                alert('Lütfen geçerli bir kredi miktarı girin!');
+                return;
+            }
+            
+            // Find user and add credits
+            const user = users.find(u => u.id == userId);
+            if (user) {
+                user.credits += amount;
+                
+                // Add to credit history
+                creditHistory.unshift({
+                    date: new Date().toISOString().split('T')[0],
+                    username: user.username,
+                    amount: amount,
+                    type: 'added',
+                    description: reason || 'Yönetici tarafından eklendi'
+                });
+                
+                alert(`${user.username} kullanıcısına ${amount} kredi eklendi!`);
+                
+                // Reset form
+                document.getElementById('creditAmount').value = 100;
+                document.getElementById('creditReason').value = '';
+                
+                // Reload data
+                loadAdminData();
+            }
+        }
+        
+        // Add bulk credits
+        function addBulkCredits() {
+            const amount = parseInt(document.getElementById('bulkCreditAmount').value);
+            const reason = document.getElementById('bulkCreditReason').value;
+            const onlyActive = document.getElementById('onlyActiveUsers').checked;
+            
+            if (isNaN(amount) || amount <= 0) {
+                alert('Lütfen geçerli bir kredi miktarı girin!');
+                return;
+            }
+            
+            let targetUsers = onlyActive ? users.filter(u => u.status === 'active') : users;
+            
+            if (targetUsers.length === 0) {
+                alert('Kredi ekleyecek kullanıcı bulunamadı!');
+                return;
+            }
+            
+            if (!confirm(`${targetUsers.length} kullanıcıya toplam ${targetUsers.length * amount} kredi eklemek istediğinizden emin misiniz?`)) {
+                return;
+            }
+            
+            // Add credits to all target users
+            targetUsers.forEach(user => {
+                user.credits += amount;
+                
+                // Add to credit history
+                creditHistory.unshift({
+                    date: new Date().toISOString().split('T')[0],
+                    username: user.username,
+                    amount: amount,
+                    type: 'added',
+                    description: reason || 'Toplu kredi dağıtımı'
+                });
+            });
+            
+            alert(`${targetUsers.length} kullanıcıya toplam ${targetUsers.length * amount} kredi eklendi!`);
+            
+            // Reset form
+            document.getElementById('bulkCreditAmount').value = 50;
+            document.getElementById('bulkCreditReason').value = '';
+            
+            // Reload data
+            loadAdminData();
+        }
+        
+        // Save settings
+        function saveSettings() {
+            // In a real application, this would save to a database
+            alert('Ayarlar başarıyla kaydedildi!');
+        }
+        
+        // Export users
+        function exportUsers() {
+            alert('Kullanıcı listesi dışa aktarıldı!');
+        }
+        
+        // Tab navigation
+        document.querySelectorAll('.admin-nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove active class from all items
+                document.querySelectorAll('.admin-nav-item').forEach(i => {
+                    i.classList.remove('active');
+                });
+                
+                // Add active class to clicked item
+                this.classList.add('active');
+                
+                // Hide all tabs
+                document.querySelectorAll('.admin-tab').forEach(tab => {
+                    tab.style.display = 'none';
+                });
+                
+                // Show selected tab
+                const tabId = this.getAttribute('data-tab') + '-tab';
+                document.getElementById(tabId).style.display = 'block';
+            });
+        });
+        
+        // Allow Enter key to submit admin login
+        document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                adminLogin();
+            }
+        });
+    </script>
+</body>
+</html>
